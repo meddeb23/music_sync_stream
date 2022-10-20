@@ -1,0 +1,45 @@
+audio,
+button {
+  display: block;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+.progressBar {
+  margin: 4rem 0;
+  height: 3px;
+  background: #dbdbdb;
+  border-radius: 12px;
+  width: 300px;
+  cursor: pointer;
+  transition: height 0.4s ease-in;
+}
+.bar {
+  height: 100%;
+  background: #11cc56;
+  border-radius: 12px;
+  width: 0px;
+  position: relative;
+}
+.barHead {
+  display: block;
+  height: 10px;
+  width: 10px;
+  background: #11cc56;
+  position: absolute;
+  right: 0;
+  top: -3px;
+  border-radius: 50%;
+}
+.time {
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  color: #babbbf;
+  font-size: 10px;
+}
