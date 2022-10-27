@@ -2,6 +2,15 @@ audio,
 button {
   display: block;
 }
+li {
+  list-style: none;
+  cursor: pointer;
+  padding: 1rem;
+  transition: background-color 400ms ease-in-out;
+}
+li:hover {
+  background-color: #babbbf;
+}
 
 .container {
   display: flex;

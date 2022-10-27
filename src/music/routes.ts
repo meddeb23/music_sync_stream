@@ -14,7 +14,6 @@ async function musicController(req: Request, res: Response) {
     httpRequest
   );
   if (data_type === "file") {
-    console.log({ headers, status, data, data_type });
     res.status(status).sendFile(data);
   } else {
     res.status(status).set(headers).json(data);

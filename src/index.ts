@@ -25,41 +25,69 @@ app.use(morgan("tiny"));
 
 app.use("/api/music", musicRoute);
 
-app.use("/static", express.static(path.join(__dirname, "public")));
+app.get("/favicon.ico ", (req: Request, res: Response) => {
+  app.use("/static", express.static(path.join(__dirname, "public")));
+  res.status(200).end();
+});
 app.get("/", (req: Request, res: Response) => {
   res.status(200).sendFile(path.join(__dirname, "public", "index.html"));
 });
-app.get("/music", (req: Request, res: Response) => {
-  res
-    .status(200)
-    .sendFile(
-      path.join("C:\\Users\\medde\\Downloads\\music", "Soolking - Askim.mp3")
-    );
-});
+
+type userSocketInfo = {
+  _id: number;
+  readyToListen: boolean;
+};
+
+let usersInTheRoom: userSocketInfo[] = [];
 
 io.on("connect", (socket: any) => {
-  console.log("user connected", socket.handshake.query);
+  console.log("user connected: ", socket.handshake.query._id);
+  const _id = socket.handshake.query._id;
   const room = socket.handshake.query.room;
+  usersInTheRoom.push({
+    _id,
+    readyToListen: false,
+  });
+  debug(usersInTheRoom);
   socket.join(room);
-  setTimeout(() => {
-    console.log("emit");
-    socket.to(room).emit("message", "some data");
-  }, 2000);
+  socket.on("can_play", () => {
+    debug(_id + " is ready");
+    const idx: number = usersInTheRoom.findIndex((u) => u._id === _id);
+    if (idx === -1) return;
+    usersInTheRoom[idx].readyToListen = true;
+    const notReady = usersInTheRoom.find((u) => !u.readyToListen);
+    debug(usersInTheRoom);
+    if (!notReady) {
+      debug("all ready to listen");
+    }
+    socket.to(room).emit("play", { play: !notReady });
+    socket.emit("play", { play: !notReady });
+  });
+
   socket.on("change_song", (song: string) => {
+    debug(_id + " : change_song");
+    usersInTheRoom = usersInTheRoom.map((u) => ({
+      ...u,
+      readyToListen: false,
+    }));
     socket.to(room).emit("change_song", song);
   });
   socket.on("seeking", (currentTime: number) => {
+    debug(_id + " seeking");
     socket.to(room).emit("seeking", currentTime);
   });
   socket.on("pause", () => {
+    debug(_id + " pause");
     socket.to(room).emit("pause");
   });
   socket.on("play", () => {
-    socket.to(room).emit("play");
+    debug(_id + " play");
+    socket.to(room).emit("play", { play: true });
   });
   socket.on("disconnect", () => {
-    // disconnectUser(socket.id);
+    usersInTheRoom = usersInTheRoom.filter((u) => u._id !== _id);
     console.log("user disconnect");
+    debug(usersInTheRoom);
   });
 });
 
